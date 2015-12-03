@@ -44,7 +44,11 @@ define('lib/score/router', ['lib/score/oop', 'lib/bluebird'], function(oop, BPro
         },
 
         invoke: function(self, parameters) {
-            return BPromise.resolve().cancellable().then(function() {
+            var promise = BPromise.resolve();
+            if (typeof promise.cancellable === 'function') {
+                promise = promise.cancellable();
+            }
+            return promise.then(function() {
                 return self.loader.call(self, parameters);
             });
         },
@@ -92,7 +96,7 @@ define('lib/score/router', ['lib/score/oop', 'lib/bluebird'], function(oop, BPro
                     path = '';
                     break;
                 }
-                if (start != 0) {
+                if (start !== 0) {
                     parts.push(path.substring(0, start));
                 }
                 var name = path.substring(start + 1, end);
@@ -145,6 +149,10 @@ define('lib/score/router', ['lib/score/oop', 'lib/bluebird'], function(oop, BPro
 
     var Router = oop.Class({
         __name__: 'Router',
+
+        __static__: {
+            VERSION: '0.1.1'
+        },
 
         routes: {},
 
