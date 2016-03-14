@@ -8,8 +8,9 @@ libraries for the development of large scale web projects. Powered by strg.at_.
 .. _strg.at: http://strg.at
 
 
+************
 score.router
-============
+************
 
 .. _js_router:
 
