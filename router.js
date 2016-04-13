@@ -26,7 +26,23 @@
  * Licensee has his registered seat, an establishment or assets.
  */
 
-define('lib/score/router', ['lib/score/oop', 'lib/bluebird'], function(oop, BPromise) {
+// Universal Module Loader
+// https://github.com/umdjs/umd
+// https://github.com/umdjs/umd/blob/v1.0.0/returnExports.js
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['score.oop', 'bluebird'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like environments that support module.exports,
+        // like Node.
+        module.exports = factory(require('score.oop'), require('bluebird'));
+    } else {
+        // Browser globals (root is window)
+        root.score.router = factory(score.oop, Promise);
+    }
+}(this, function(oop, BPromise) {
 
     var Route = oop.Class({
         __name__: 'Route',
@@ -191,4 +207,4 @@ define('lib/score/router', ['lib/score/oop', 'lib/bluebird'], function(oop, BPro
 
     return Router;
 
-});
+}));
