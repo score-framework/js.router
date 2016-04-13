@@ -21,7 +21,7 @@ generation and parsing of such strings.
 The usage is quite simple: create routes with ``addRoute``, create urls with
 ``url`` and invoke the registered routes via ``load``::
 
-    require(['lib/score/router'], function(Router) {
+    require(['score.router'], function(Router) {
 
         var router = new Router();
 
@@ -41,7 +41,7 @@ It is possible to define variables to routes. These have to provided as
 bracket-encapsulated strings in the url template and as arguments object to
 the ``url`` function::
 
-    require(['lib/score/router'], function(Router) {
+    require(['score.router'], function(Router) {
 
         var router = new Router();
 
@@ -59,7 +59,7 @@ It is also possible to provide converters to newly added routes. These
 converter functions are responsible for turning the javascript-representation
 of an object into its URL representation and vice versa::
 
-    require(['lib/score/router', 'Customer'], function(Router, Customer) {
+    require(['score.router', 'Customer'], function(Router, Customer) {
 
         var router = new Router();
 
