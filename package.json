@@ -1,0 +1,27 @@
+{
+  "name": "score.router",
+  "version": "0.2.0",
+  "description": "A small routing library for in-page navigation",
+  "main": "router.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/score-framework/js.router.git"
+  },
+  "keywords": [
+    "score",
+    "router"
+  ],
+  "author": "strg.at <score@strg.at>",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/score-framework/js.router/issues"
+  },
+  "homepage": "https://github.com/score-framework/js.router#readme",
+  "dependencies": [
+      "score.oop",
+      "bluebird"
+  ]
+}
