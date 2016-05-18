@@ -4,7 +4,7 @@
   "description": "A small routing library for in-page navigation",
   "main": "router.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "$(node -e \"console.log(require('path').dirname(require.resolve('mocha')) + '/bin/mocha')\")"
   },
   "repository": {
     "type": "git",
