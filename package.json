@@ -12,6 +12,7 @@
   },
   "keywords": [
     "score",
+    "framework",
     "router"
   ],
   "author": "strg.at <score@strg.at>",
@@ -21,7 +22,7 @@
   },
   "homepage": "https://github.com/score-framework/js.router#readme",
   "dependencies": [
-      "score.oop",
-      "bluebird"
+      "score.init",
+      "score.oop"
   ]
 }

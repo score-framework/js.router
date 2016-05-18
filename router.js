@@ -1,5 +1,5 @@
 /**
- * Copyright © 2015 STRG.AT GmbH, Vienna, Austria
+ * Copyright © 2015,2016 STRG.AT GmbH, Vienna, Austria
  *
  * This file is part of the The SCORE Framework.
  *
@@ -32,179 +32,179 @@
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define(['score.oop', 'bluebird'], factory);
+        define(['score.init', 'score.oop'], factory);
     } else if (typeof module === 'object' && module.exports) {
         // Node. Does not work with strict CommonJS, but
         // only CommonJS-like environments that support module.exports,
         // like Node.
-        module.exports = factory(require('score.oop'), require('bluebird'));
+        module.exports = factory(require('score.init'), require('score.oop'));
     } else {
         // Browser globals (root is window)
-        root.score.router = factory(score.oop, Promise);
+        factory(root.score);
     }
-}(this, function(oop, BPromise) {
+}(this, function(score) {
 
-    var Route = oop.Class({
-        __name__: 'Route',
+    score.extend('router', ['oop'], function() {
 
-        __init__: function(self, path, loader, params2urlparts, urlparts2params) {
-            self.path = path;
-            self._setParamHandlers();
-            self.loader = loader;
-            if (typeof params2urlparts !== 'undefined') {
-                self.params2urlparts = params2urlparts;
-            }
-            if (typeof urlparts2params !== 'undefined') {
-                self.urlparts2params = urlparts2params;
-            }
-        },
+        var Route = score.oop.Class({
+            __name__: 'Route',
 
-        invoke: function(self, parameters) {
-            var promise = BPromise.resolve();
-            if (typeof promise.cancellable === 'function') {
-                promise = promise.cancellable();
-            }
-            return promise.then(function() {
-                return self.loader.call(self, parameters);
-            });
-        },
+            __init__: function(self, path, loader, params2urlparts, urlparts2params) {
+                self.path = path;
+                self._setParamHandlers();
+                self.loader = loader;
+                if (typeof params2urlparts !== 'undefined') {
+                    self.params2urlparts = params2urlparts;
+                }
+                if (typeof urlparts2params !== 'undefined') {
+                    self.urlparts2params = urlparts2params;
+                }
+            },
 
-        url: function(self, parameters) {
-            if (typeof parameters === 'undefined') {
-                parameters = {};
-            }
-            if (self.params2urlparts) {
-                parameters = self.params2urlparts(parameters);
-            }
-            return self.parts2url(parameters);
-        },
+            invoke: function(self, parameters) {
+                return Promise.resolve().then(function() {
+                    return self.loader.call(self, parameters);
+                });
+            },
 
-        handle: function(self, url) {
-            var params = self.extractParams(url);
-            if (params === null) {
-                return null;
-            }
-            if (self.urlparts2params) {
-                params = self.urlparts2params(params);
+            url: function(self, parameters) {
+                if (typeof parameters === 'undefined') {
+                    parameters = {};
+                }
+                if (self.params2urlparts) {
+                    parameters = self.params2urlparts(parameters);
+                }
+                return self.parts2url(parameters);
+            },
+
+            handle: function(self, url) {
+                var params = self.extractParams(url);
                 if (params === null) {
                     return null;
                 }
-            }
-            return self.invoke(params);
-        },
-
-        extractParams: function(self, url) {
-            var match = self.regex.exec(url);
-            if (!match) {
-                return null;
-            }
-            return self.match2parts(match);
-        },
-
-        _setParamHandlers: function(self) {
-            var parts = [];
-            var path = self.path;
-            while (path.length) {
-                var start = path.indexOf('{');
-                var end = path.indexOf('}');
-                if (start < 0 || end < 0) {
-                    parts.push(path);
-                    path = '';
-                    break;
-                }
-                if (start !== 0) {
-                    parts.push(path.substring(0, start));
-                }
-                var name = path.substring(start + 1, end);
-                var regex = '.*?';
-                var colon = name.indexOf(':');
-                if (colon > 0) {
-                    regex = name.substring(colon + 1);
-                    name = name.substring(0, colon);
-                }
-                parts.push({
-                    'name': name,
-                    'regex': regex
-                });
-                path = path.substring(end + 1);
-            }
-            var regex = '';
-            var idx2name = {};
-            var idx = 1;
-            for (var i = 0; i < parts.length; i++) {
-                if (typeof parts[i] === 'object') {
-                    regex += '(' + parts[i].regex.replace(/\((?!\?:)/, '(?:') + ')';
-                    idx2name[idx++] = parts[i].name;
-                } else {
-                    regex += parts[i];
-                }
-            }
-            regex = '^' + regex + '$';
-            self.regex = new RegExp(regex);
-            self.match2parts = function(match) {
-                var obj = {};
-                for (var idx in idx2name) {
-                    obj[idx2name[idx]] = match[idx];
-                }
-                return obj;
-            };
-            self.parts2url = function(params) {
-                var url = '';
-                for (var i = 0; i < parts.length; i++) {
-                    if (typeof parts[i] === 'object') {
-                        url += params[parts[i].name];
-                    } else {
-                        url += parts[i];
+                if (self.urlparts2params) {
+                    params = self.urlparts2params(params);
+                    if (params === null) {
+                        return null;
                     }
                 }
-                return url;
-            };
-        }
+                return self.invoke(params);
+            },
 
-    });
-
-    var Router = oop.Class({
-        __name__: 'Router',
-
-        __static__: {
-            VERSION: '0.2.0'
-        },
-
-        routes: {},
-
-        addRoute: function(self, name, path, loader, params2urlparts, urlparts2params) {
-            if (name in self.routes) {
-                throw new Error('Route "' + name + '" already configured');
-            }
-            self.routes[name] = new Route(path, loader, params2urlparts, urlparts2params);
-        },
-
-        load: function(self, url) {
-            for (var name in self.routes) {
-                var result = self.routes[name].handle(url);
-                if (result) {
-                    return result;
+            extractParams: function(self, url) {
+                var match = self.regex.exec(url);
+                if (!match) {
+                    return null;
                 }
-            }
-            throw new Error('No route could handle the url: ' + url);
-        },
+                return self.match2parts(match);
+            },
 
-        invoke: function(self, name, parameters) {
-            if (!(name in self.routes)) {
-                throw new Error('No route called "' + name + '" configured');
+            _setParamHandlers: function(self) {
+                var parts = [];
+                var path = self.path;
+                while (path.length) {
+                    var start = path.indexOf('{');
+                    var end = path.indexOf('}');
+                    if (start < 0 || end < 0) {
+                        parts.push(path);
+                        path = '';
+                        break;
+                    }
+                    if (start !== 0) {
+                        parts.push(path.substring(0, start));
+                    }
+                    var name = path.substring(start + 1, end);
+                    var regex = '.*?';
+                    var colon = name.indexOf(':');
+                    if (colon > 0) {
+                        regex = name.substring(colon + 1);
+                        name = name.substring(0, colon);
+                    }
+                    parts.push({
+                        'name': name,
+                        'regex': regex
+                    });
+                    path = path.substring(end + 1);
+                }
+                var regex = '';
+                var idx2name = {};
+                var idx = 1;
+                for (var i = 0; i < parts.length; i++) {
+                    if (typeof parts[i] === 'object') {
+                        regex += '(' + parts[i].regex.replace(/\((?!\?:)/, '(?:') + ')';
+                        idx2name[idx++] = parts[i].name;
+                    } else {
+                        regex += parts[i];
+                    }
+                }
+                regex = '^' + regex + '$';
+                self.regex = new RegExp(regex);
+                self.match2parts = function(match) {
+                    var obj = {};
+                    for (var idx in idx2name) {
+                        obj[idx2name[idx]] = match[idx];
+                    }
+                    return obj;
+                };
+                self.parts2url = function(params) {
+                    var url = '';
+                    for (var i = 0; i < parts.length; i++) {
+                        if (typeof parts[i] === 'object') {
+                            url += params[parts[i].name];
+                        } else {
+                            url += parts[i];
+                        }
+                    }
+                    return url;
+                };
             }
-            return self.routes[name].invoke(parameters);
-        },
 
-        url: function(self, name, parameters) {
-            if (!(name in self.routes)) {
-                throw new Error('No route called "' + name + '" configured');
+        });
+
+        var Router = score.oop.Class({
+            __name__: 'Router',
+
+            __static__: {
+                VERSION: '0.2.0'
+            },
+
+            routes: {},
+
+            addRoute: function(self, name, path, loader, params2urlparts, urlparts2params) {
+                if (name in self.routes) {
+                    throw new Error('Route "' + name + '" already configured');
+                }
+                self.routes[name] = new Route(path, loader, params2urlparts, urlparts2params);
+            },
+
+            load: function(self, url) {
+                for (var name in self.routes) {
+                    var result = self.routes[name].handle(url);
+                    if (result) {
+                        return result;
+                    }
+                }
+                throw new Error('No route could handle the url: ' + url);
+            },
+
+            invoke: function(self, name, parameters) {
+                if (!(name in self.routes)) {
+                    throw new Error('No route called "' + name + '" configured');
+                }
+                return self.routes[name].invoke(parameters);
+            },
+
+            url: function(self, name, parameters) {
+                if (!(name in self.routes)) {
+                    throw new Error('No route called "' + name + '" configured');
+                }
+                return self.routes[name].url(parameters);
             }
-            return self.routes[name].url(parameters);
-        }
+
+        });
+
+        return Router;
 
     });
-
-    return Router;
 
 }));
