@@ -165,7 +165,7 @@
             __name__: 'Router',
 
             __static__: {
-                VERSION: '0.2.0'
+                __version__: '0.3.0'
             },
 
             routes: {},
