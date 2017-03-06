@@ -1,5 +1,5 @@
 /**
- * Copyright © 2015,2016 STRG.AT GmbH, Vienna, Austria
+ * Copyright © 2015-2017 STRG.AT GmbH, Vienna, Austria
  *
  * This file is part of the The SCORE Framework.
  *
@@ -163,7 +163,7 @@
         __name__: 'Router',
 
         __static__: {
-            __version__: '0.3.0'
+            __version__: '0.4.0'
         },
 
         routes: {},
